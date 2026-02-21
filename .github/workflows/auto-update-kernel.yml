@@ -1,0 +1,55 @@
+name: Auto-Update Kernel Versions
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight UTC
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch Latest Kernel Versions
+        id: fetch_versions
+        run: |
+          echo "Fetching latest kernel releases..."
+          
+          # Stable kernel version (base 6.18)
+          LATEST_618=$(curl -s https://www.kernel.org/releases.json | jq -r '.releases[] | select(.version | startswith("6.18.")) | .version' | sort -V | tail -n 1)
+          MINOR_618=$(echo $LATEST_618 | cut -d. -f3)
+          if [ -z "$MINOR_618" ]; then MINOR_618=0; fi
+          echo "Latest 6.18 minor version is: $MINOR_618"
+          
+          # Edge kernel version (base 6.19)
+          LATEST_619=$(curl -s https://www.kernel.org/releases.json | jq -r '.releases[] | select(.version | startswith("6.19.")) | .version' | sort -V | tail -n 1)
+          MINOR_619=$(echo $LATEST_619 | cut -d. -f3)
+          if [ -z "$MINOR_619" ]; then MINOR_619=0; fi
+          echo "Latest 6.19 minor version is: $MINOR_619"
+
+          # Update the .spec files using sed
+          echo "Updating Stable spec file..."
+          sed -i "s/^%define _stablekver [0-9]\+/%define _stablekver ${MINOR_618}/" sources/kernel-cachyos-custom-stable/kernel-cachyos-custom-stable.spec
+          
+          echo "Updating Edge spec file..."
+          sed -i "s/^%define _stablekver [0-9]\+/%define _stablekver ${MINOR_619}/" sources/kernel-cachyos-custom-edge/kernel-cachyos-custom-edge.spec
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add sources/**/*.spec
+          
+          # Only commit if there are changes
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Auto-update kernel versions to match kernel.org"
+            git push
+            echo "Successfully updated and pushed new versions."
+          else
+            echo "No new kernel versions found. Everything is up to date."
+          fi
