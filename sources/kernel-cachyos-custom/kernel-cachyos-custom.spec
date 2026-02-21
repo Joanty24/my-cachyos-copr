@@ -39,10 +39,12 @@ Requires:       kernel-modules-uname-r = %{_kver}
 Requires:       kernel-modules-core-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
 
-BuildRequires:  bc bison dwarves elfutils-devel flex gcc gettext-devel kmod make openssl openssl-devel perl-Carp perl-devel perl-generators perl-interpreter python3-devel python3-pyyaml python-srpm-macros curl
+BuildRequires:  bc bison dwarves elfutils-devel flex gcc gettext-devel kmod make openssl openssl-devel perl-Carp perl-devel perl-generators perl-interpreter python3-devel python3-pyyaml python-srpm-macros
 
 Source0:        https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-%{_tarkver}.tar.xz
 Source1:        https://raw.githubusercontent.com/CachyOS/linux-cachyos/master/linux-cachyos/config
+Patch0:         %{_patch_src}/all/0001-cachyos-base-all.patch
+Patch1:         %{_patch_src}/sched/0001-bore-cachy.patch
 
 %description
 Custom build of CachyOS kernel.
@@ -70,11 +72,9 @@ Kernel modules for the %{name}-core kernel package.
 %setup -q -n linux-%{_tarkver}
 cp %{SOURCE1} .config
 
-# Download and apply patches manually since we use URLs
-curl -L %{_patch_src}/all/0001-cachyos-base-all.patch -o cachyos-base.patch
-curl -L %{_patch_src}/sched/0001-bore-cachy.patch -o bore.patch
-patch -p1 < cachyos-base.patch
-patch -p1 < bore.patch
+# Apply patches
+%patch -P 0 -p1
+%patch -P 1 -p1
 
 scripts/config -e CACHY -e SCHED_BORE
 scripts/config --set-str CONFIG_LSM lockdown,yama,integrity,selinux,bpf,landlock
