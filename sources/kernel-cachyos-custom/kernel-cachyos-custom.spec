@@ -15,7 +15,11 @@
 %define _rpmver %{version}-%{release}
 %define _kver %{_rpmver}.%{_arch}
 
-%define _tarkver %{version}
+%if %{_stablekver} == 0
+    %define _tarkver %{_basekver}
+%else
+    %define _tarkver %{version}
+%endif
 
 # Define the tickrate used by the kernel
 %define _hz_tick 250
