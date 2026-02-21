@@ -31,7 +31,7 @@
 %define _devel_dir %{_usrsrc}/kernels/%{_kver}
 %define _patch_src https://raw.githubusercontent.com/CachyOS/kernel-patches/master/%{_basekver}
 
-Name:           kernel-cachyos-custom
+Name:           kernel-cachyos-custom-edge
 Summary:        Custom CachyOS Kernel (BORE + %{_hz_tick}Hz)
 Version:        %{_basekver}.%{_stablekver}
 Release:        1%{?dist}
@@ -51,7 +51,7 @@ Patch0:         %{_patch_src}/all/0001-cachyos-base-all.patch
 Patch1:         %{_patch_src}/sched/0001-bore-cachy.patch
 
 %description
-Custom build of CachyOS kernel.
+Custom build of CachyOS kernel (Edge version).
 
 %package core
 Summary:        The Linux kernel
