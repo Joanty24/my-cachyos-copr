@@ -19,32 +19,26 @@ jobs:
         run: |
           echo "Fetching versions from CachyOS sources..."
           
-          # Stable: Query the official CachyOS Fedora Copr
-          # Returns something like "6.18.12-cachyos1"
-          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '.items | .[] | select(.state == "succeeded") | .source_package.version' | head -n 1)
+          # Stable: Query the official CachyOS Fedora Copr for the main kernel on fedora-43-x86_64
+          # Returns something like "6.18.6-cachyos1"
+          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '.items[] | select(.state == "succeeded" and (.chroots | index("fedora-43-x86_64")) and .source_package.name == "kernel-cachyos") | .source_package.version' | head -n 1)
+          
+          if [ -z "$COPR_VER" ]; then
+            echo "Error: Could not fetch a valid version from Copr API."
+            exit 1
+          fi
+
           STABLE_FULL=$(echo $COPR_VER | cut -d- -f1)
           BASE_STABLE=$(echo $STABLE_FULL | cut -d. -f1,2)
           MINOR_STABLE=$(echo $STABLE_FULL | cut -d. -f3)
           if [ -z "$MINOR_STABLE" ]; then MINOR_STABLE=0; fi
           
-          echo "CachyOS Stable (Copr): $STABLE_FULL (Base: $BASE_STABLE, Minor: $MINOR_STABLE)"
+          echo "CachyOS Stable (Copr F43): $STABLE_FULL (Base: $BASE_STABLE, Minor: $MINOR_STABLE)"
 
-          # Edge: Query the main CachyOS GitHub (Arch Linux version)
-          # We'll pull from their PKGBUILD directly
-          PKGBUILD=$(curl -s https://raw.githubusercontent.com/CachyOS/linux-cachyos/master/linux-cachyos/PKGBUILD)
-          EDGE_MAJOR=$(echo "$PKGBUILD" | grep "_major=" | cut -d= -f2)
-          EDGE_MINOR=$(echo "$PKGBUILD" | grep "_minor=" | cut -d= -f2)
-          
-          echo "CachyOS Edge (GitHub): ${EDGE_MAJOR}.${EDGE_MINOR}"
-
-          # Update the .spec files
+          # Update the .spec file
           echo "Updating Stable spec file..."
           sed -i "s/^%define _basekver .*/%define _basekver ${BASE_STABLE}/" sources/kernel-cachyos-custom-stable/kernel-cachyos-custom-stable.spec
           sed -i "s/^%define _stablekver .*/%define _stablekver ${MINOR_STABLE}/" sources/kernel-cachyos-custom-stable/kernel-cachyos-custom-stable.spec
-          
-          echo "Updating Edge spec file..."
-          sed -i "s/^%define _basekver .*/%define _basekver ${EDGE_MAJOR}/" sources/kernel-cachyos-custom-edge/kernel-cachyos-custom-edge.spec
-          sed -i "s/^%define _stablekver .*/%define _stablekver ${EDGE_MINOR}/" sources/kernel-cachyos-custom-edge/kernel-cachyos-custom-edge.spec
 
       - name: Commit and Push Changes
         run: |
@@ -55,9 +49,9 @@ jobs:
           
           # Only commit if there are changes
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Auto-update kernel versions to match kernel.org"
+            git commit -m "Auto-update kernel version to match official F43 Copr release"
             git push
-            echo "Successfully updated and pushed new versions."
+            echo "Successfully updated and pushed new version."
           else
             echo "No new kernel versions found. Everything is up to date."
           fi
