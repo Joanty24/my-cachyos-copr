@@ -17,26 +17,34 @@ jobs:
       - name: Fetch Latest Kernel Versions
         id: fetch_versions
         run: |
-          echo "Fetching latest kernel releases..."
+          echo "Fetching versions from CachyOS sources..."
           
-          # Stable kernel version (base 6.18)
-          LATEST_618=$(curl -s https://www.kernel.org/releases.json | jq -r '.releases[] | select(.version | startswith("6.18.")) | .version' | sort -V | tail -n 1)
-          MINOR_618=$(echo $LATEST_618 | cut -d. -f3)
-          if [ -z "$MINOR_618" ]; then MINOR_618=0; fi
-          echo "Latest 6.18 minor version is: $MINOR_618"
+          # Stable: Query the official CachyOS Fedora Copr
+          # Returns something like "6.18.12-cachyos1"
+          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '.items | .[] | select(.state == "succeeded") | .source_package.version' | head -n 1)
+          STABLE_FULL=$(echo $COPR_VER | cut -d- -f1)
+          BASE_STABLE=$(echo $STABLE_FULL | cut -d. -f1,2)
+          MINOR_STABLE=$(echo $STABLE_FULL | cut -d. -f3)
+          if [ -z "$MINOR_STABLE" ]; then MINOR_STABLE=0; fi
           
-          # Edge kernel version (base 6.19)
-          LATEST_619=$(curl -s https://www.kernel.org/releases.json | jq -r '.releases[] | select(.version | startswith("6.19.")) | .version' | sort -V | tail -n 1)
-          MINOR_619=$(echo $LATEST_619 | cut -d. -f3)
-          if [ -z "$MINOR_619" ]; then MINOR_619=0; fi
-          echo "Latest 6.19 minor version is: $MINOR_619"
+          echo "CachyOS Stable (Copr): $STABLE_FULL (Base: $BASE_STABLE, Minor: $MINOR_STABLE)"
 
-          # Update the .spec files using sed
+          # Edge: Query the main CachyOS GitHub (Arch Linux version)
+          # We'll pull from their PKGBUILD directly
+          PKGBUILD=$(curl -s https://raw.githubusercontent.com/CachyOS/linux-cachyos/master/linux-cachyos/PKGBUILD)
+          EDGE_MAJOR=$(echo "$PKGBUILD" | grep "_major=" | cut -d= -f2)
+          EDGE_MINOR=$(echo "$PKGBUILD" | grep "_minor=" | cut -d= -f2)
+          
+          echo "CachyOS Edge (GitHub): ${EDGE_MAJOR}.${EDGE_MINOR}"
+
+          # Update the .spec files
           echo "Updating Stable spec file..."
-          sed -i "s/^%define _stablekver [0-9]\+/%define _stablekver ${MINOR_618}/" sources/kernel-cachyos-custom-stable/kernel-cachyos-custom-stable.spec
+          sed -i "s/^%define _basekver .*/%define _basekver ${BASE_STABLE}/" sources/kernel-cachyos-custom-stable/kernel-cachyos-custom-stable.spec
+          sed -i "s/^%define _stablekver .*/%define _stablekver ${MINOR_STABLE}/" sources/kernel-cachyos-custom-stable/kernel-cachyos-custom-stable.spec
           
           echo "Updating Edge spec file..."
-          sed -i "s/^%define _stablekver [0-9]\+/%define _stablekver ${MINOR_619}/" sources/kernel-cachyos-custom-edge/kernel-cachyos-custom-edge.spec
+          sed -i "s/^%define _basekver .*/%define _basekver ${EDGE_MAJOR}/" sources/kernel-cachyos-custom-edge/kernel-cachyos-custom-edge.spec
+          sed -i "s/^%define _stablekver .*/%define _stablekver ${EDGE_MINOR}/" sources/kernel-cachyos-custom-edge/kernel-cachyos-custom-edge.spec
 
       - name: Commit and Push Changes
         run: |
