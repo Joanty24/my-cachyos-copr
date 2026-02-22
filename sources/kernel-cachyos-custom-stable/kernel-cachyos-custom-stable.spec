@@ -40,7 +40,6 @@ URL:            https://cachyos.org
 
 Requires:       kernel-core-uname-r = %{_kver}
 Requires:       kernel-modules-uname-r = %{_kver}
-Requires:       kernel-modules-core-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
 
 BuildRequires:  bc bison dwarves elfutils-devel flex gcc gettext-devel kmod make openssl openssl-devel perl-Carp perl-devel perl-generators perl-interpreter python3-devel python3-pyyaml python-srpm-macros
@@ -92,6 +91,8 @@ scripts/config --set-val X86_64_VERSION %{_x86_64_lvl}
 %install
 install -Dm644 "$(%make_build -s image_name)" "%{buildroot}%{_kernel_dir}/vmlinuz"
 %make_build INSTALL_MOD_PATH="%{buildroot}" INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install
+install -Dm644 .config "%{buildroot}%{_kernel_dir}/config"
+install -Dm644 System.map "%{buildroot}%{_kernel_dir}/System.map"
 rm -rf %{buildroot}%{_kernel_dir}/build
 rm -rf %{buildroot}%{_kernel_dir}/source
 
