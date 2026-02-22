@@ -41,6 +41,7 @@ URL:            https://cachyos.org
 Requires:       kernel-core-uname-r = %{_kver}
 Requires:       kernel-modules-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
+Provides:       kernel-uname-r = %{_kver}
 
 BuildRequires:  bc bison dwarves elfutils-devel flex gcc gettext-devel kmod make openssl openssl-devel perl-Carp perl-devel perl-generators perl-interpreter python3-devel python3-pyyaml python-srpm-macros
 
@@ -66,6 +67,7 @@ The kernel-core package contains the Linux kernel.
 Summary:        Kernel modules for %{name}
 Provides:       kernel-modules = %{_rpmver}
 Provides:       kernel-modules-uname-r = %{_kver}
+Provides:       kernel-modules-core-uname-r = %{_kver}
 Requires:       kernel-uname-r = %{_kver}
 
 %description modules
