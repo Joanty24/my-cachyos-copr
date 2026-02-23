@@ -59,6 +59,9 @@ Provides:       kernel = %{_rpmver}
 Provides:       kernel-core-uname-r = %{_kver}
 Requires:       kernel-modules-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
+Requires:       /usr/bin/kernel-install
+Requires:       dracut
+Requires:       kmod
 
 %description core
 The kernel-core package contains the Linux kernel.
@@ -69,6 +72,8 @@ Provides:       kernel-modules = %{_rpmver}
 Provides:       kernel-modules-uname-r = %{_kver}
 Provides:       kernel-modules-core-uname-r = %{_kver}
 Requires:       kernel-uname-r = %{_kver}
+Requires:       dracut
+Requires:       kmod
 
 %description modules
 Kernel modules for the %{name}-core kernel package.
