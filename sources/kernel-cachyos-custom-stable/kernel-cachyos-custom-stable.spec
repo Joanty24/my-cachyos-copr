@@ -100,7 +100,6 @@ rm -rf %{buildroot}%{_kernel_dir}/source
 
 %post core
 mkdir -p /var/lib/rpm-state/kernel
-touch /var/lib/rpm-state/kernel/installing_core_%{_kver}
 
 %preun core
 if [ $1 -eq 0 ]; then
@@ -108,7 +107,6 @@ if [ $1 -eq 0 ]; then
 fi
 
 %posttrans core
-rm -f /var/lib/rpm-state/kernel/installing_core_%{_kver}
 # Ensure this kernel package is treated as the default type
 sed -i 's/^DEFAULTKERNEL=.*/DEFAULTKERNEL=%{name}-core/' /etc/sysconfig/kernel || true
 /bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
@@ -118,6 +116,7 @@ grubby --set-default /boot/${MACHINE_ID}/%{_kver}/linux 2>/dev/null || \
 grubby --set-default /boot/vmlinuz-%{_kver} 2>/dev/null || true
 
 %files core
+%dir %{_kernel_dir}
 %{_kernel_dir}/vmlinuz
 %{_kernel_dir}/modules.builtin
 %{_kernel_dir}/modules.builtin.modinfo

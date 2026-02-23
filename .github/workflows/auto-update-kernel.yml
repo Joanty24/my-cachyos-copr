@@ -29,7 +29,7 @@ jobs:
           
           # Stable: Query the official CachyOS Fedora Copr for the main kernel on fedora-43-x86_64
           # Returns something like "6.18.12-cachyos1"
-          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '[.items[] | select((.chroots | index("fedora-43-x86_64")) and .source_package.name == "kernel-cachyos")] | sort_by(.source_package.version | split("-")[0] | split(".") | map(tonumber)) | reverse | .[0].source_package.version')
+          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '[.items[] | select(.state == "succeeded" and (.chroots | index("fedora-43-x86_64")) and .source_package.name == "kernel-cachyos" and .source_package.version != null)] | sort_by(.source_package.version | split("-")[0] | split(".") | map(tonumber)) | reverse | .[0].source_package.version')
           
           if [ -z "$COPR_VER" ]; then
             echo "Error: Could not fetch a valid version from Copr API."
