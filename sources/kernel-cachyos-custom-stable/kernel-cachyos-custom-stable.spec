@@ -103,7 +103,9 @@ mkdir -p /var/lib/rpm-state/kernel
 touch /var/lib/rpm-state/kernel/installing_core_%{_kver}
 
 %preun core
-/bin/kernel-install remove %{_kver} %{_kernel_dir}/vmlinuz || exit $?
+if [ $1 -eq 0 ]; then
+    /bin/kernel-install remove %{_kver} %{_kernel_dir}/vmlinuz || exit $?
+fi
 
 %posttrans core
 rm -f /var/lib/rpm-state/kernel/installing_core_%{_kver}
@@ -111,7 +113,9 @@ rm -f /var/lib/rpm-state/kernel/installing_core_%{_kver}
 sed -i 's/^DEFAULTKERNEL=.*/DEFAULTKERNEL=%{name}-core/' /etc/sysconfig/kernel || true
 /bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
 # Explicitly set this specific kernel as default for grubby just in case
-grubby --set-default=%{_kernel_dir}/vmlinuz || true
+MACHINE_ID=$(cat /etc/machine-id 2>/dev/null)
+grubby --set-default /boot/${MACHINE_ID}/%{_kver}/linux 2>/dev/null || \
+grubby --set-default /boot/vmlinuz-%{_kver} 2>/dev/null || true
 
 %files core
 %{_kernel_dir}/vmlinuz
