@@ -98,6 +98,21 @@ install -Dm644 System.map "%{buildroot}%{_kernel_dir}/System.map"
 rm -rf %{buildroot}%{_kernel_dir}/build
 rm -rf %{buildroot}%{_kernel_dir}/source
 
+%post core
+mkdir -p /var/lib/rpm-state/kernel
+touch /var/lib/rpm-state/kernel/installing_core_%{_kver}
+
+%preun core
+/bin/kernel-install remove %{_kver} %{_kernel_dir}/vmlinuz || exit $?
+
+%posttrans core
+rm -f /var/lib/rpm-state/kernel/installing_core_%{_kver}
+# Ensure this kernel package is treated as the default type
+sed -i 's/^DEFAULTKERNEL=.*/DEFAULTKERNEL=%{name}-core/' /etc/sysconfig/kernel || true
+/bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
+# Explicitly set this specific kernel as default for grubby just in case
+grubby --set-default=%{_kernel_dir}/vmlinuz || true
+
 %files core
 %{_kernel_dir}/vmlinuz
 %{_kernel_dir}/modules.builtin
