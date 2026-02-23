@@ -115,6 +115,12 @@ MACHINE_ID=$(cat /etc/machine-id 2>/dev/null)
 grubby --set-default /boot/${MACHINE_ID}/%{_kver}/linux 2>/dev/null || \
 grubby --set-default /boot/vmlinuz-%{_kver} 2>/dev/null || true
 
+%post modules
+/sbin/depmod -a %{_kver} || true
+
+%postun modules
+/sbin/depmod -a %{_kver} || true
+
 %files core
 %dir %{_kernel_dir}
 %{_kernel_dir}/vmlinuz
