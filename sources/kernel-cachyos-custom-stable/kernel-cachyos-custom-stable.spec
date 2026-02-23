@@ -102,7 +102,9 @@ rm -rf %{buildroot}%{_kernel_dir}/source
 mkdir -p /var/lib/rpm-state/kernel
 
 %preun core
-/bin/kernel-install remove %{_kver} || exit $?
+entry_type=""
+/bin/kernel-install --help | grep -q -- '--entry-type=' && entry_type="--entry-type type1"
+/bin/kernel-install remove %{_kver} $entry_type || exit $?
 
 %posttrans core
 # Ensure this kernel package is treated as the default type
