@@ -102,9 +102,7 @@ rm -rf %{buildroot}%{_kernel_dir}/source
 mkdir -p /var/lib/rpm-state/kernel
 
 %preun core
-if [ $1 -eq 0 ]; then
-    /bin/kernel-install remove %{_kver} %{_kernel_dir}/vmlinuz || exit $?
-fi
+/bin/kernel-install remove %{_kver} || exit $?
 
 %posttrans core
 # Ensure this kernel package is treated as the default type
