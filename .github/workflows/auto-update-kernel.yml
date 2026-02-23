@@ -13,14 +13,14 @@ jobs:
       contents: write
     steps:
       - name: Install dependencies
-        run: dnf install -y git jq curl
+        run: |
+          dnf install -y git jq curl
+          git config --global --add safe.directory '*'
 
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # safe.directory workaround for containers
-          set-safe-directory: '*'
 
       - name: Fetch Latest Kernel Versions
         id: fetch_versions
