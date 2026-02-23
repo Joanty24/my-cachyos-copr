@@ -100,6 +100,7 @@ rm -rf %{buildroot}%{_kernel_dir}/source
 
 %post core
 mkdir -p /var/lib/rpm-state/kernel
+touch /var/lib/rpm-state/kernel/installing_core_%{_kver}
 
 %preun core
 entry_type=""
@@ -107,6 +108,7 @@ entry_type=""
 /bin/kernel-install remove %{_kver} $entry_type || exit $?
 
 %posttrans core
+rm -f /var/lib/rpm-state/kernel/installing_core_%{_kver}
 # Ensure this kernel package is treated as the default type
 sed -i 's/^DEFAULTKERNEL=.*/DEFAULTKERNEL=%{name}-core/' /etc/sysconfig/kernel || true
 /bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
@@ -116,10 +118,20 @@ grubby --set-default /boot/${MACHINE_ID}/%{_kver}/linux 2>/dev/null || \
 grubby --set-default /boot/vmlinuz-%{_kver} 2>/dev/null || true
 
 %post modules
-/sbin/depmod -a %{_kver} || true
+/sbin/depmod -a %{_kver} || exit $?
+if [ ! -f /var/lib/rpm-state/kernel/installing_core_%{_kver} ]; then
+    mkdir -p /var/lib/rpm-state/kernel
+    touch /var/lib/rpm-state/kernel/need_to_run_dracut_%{_kver}
+fi
 
 %postun modules
-/sbin/depmod -a %{_kver} || true
+/sbin/depmod -a %{_kver} || exit $?
+
+%posttrans modules
+if [ -f /var/lib/rpm-state/kernel/need_to_run_dracut_%{_kver} ]; then
+    rm -f /var/lib/rpm-state/kernel/need_to_run_dracut_%{_kver}
+    dracut -f --kver "%{_kver}" || exit $?
+fi
 
 %files core
 %dir %{_kernel_dir}
