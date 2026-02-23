@@ -61,7 +61,7 @@ Requires:       kernel-modules-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
 Requires(post): /usr/bin/kernel-install
 Requires(preun): /usr/bin/kernel-install
-Requires(posttrans): /usr/bin/kernel-install
+Requires(posttrans): /usr/bin/kernel-install grubby sed
 
 %description core
 The kernel-core package contains the Linux kernel.
