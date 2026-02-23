@@ -8,13 +8,19 @@ on:
 jobs:
   update-kernel:
     runs-on: ubuntu-latest
+    container: fedora:43
     permissions:
       contents: write
     steps:
+      - name: Install dependencies
+        run: dnf install -y git jq curl
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # safe.directory workaround for containers
+          set-safe-directory: '*'
 
       - name: Fetch Latest Kernel Versions
         id: fetch_versions
@@ -22,8 +28,8 @@ jobs:
           echo "Fetching versions from CachyOS sources..."
           
           # Stable: Query the official CachyOS Fedora Copr for the main kernel on fedora-43-x86_64
-          # Returns something like "6.18.6-cachyos1"
-          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '.items[] | select(.state == "succeeded" and (.chroots | index("fedora-43-x86_64")) and .source_package.name == "kernel-cachyos") | .source_package.version' | head -n 1)
+          # Returns something like "6.18.12-cachyos1"
+          COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '.items[] | select((.chroots | index("fedora-43-x86_64")) and .source_package.name == "kernel-cachyos") | .source_package.version' | head -n 1)
           
           if [ -z "$COPR_VER" ]; then
             echo "Error: Could not fetch a valid version from Copr API."
