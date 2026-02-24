@@ -97,7 +97,7 @@ scripts/config --set-val X86_64_VERSION %{_x86_64_lvl}
 
 %install
 install -Dm644 "$(%make_build -s image_name)" "%{buildroot}%{_kernel_dir}/vmlinuz"
-%make_build INSTALL_MOD_PATH="%{buildroot}" INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install
+%make_build INSTALL_MOD_PATH="%{buildroot}" INSTALL_MOD_STRIP=1 DEPMOD=/bin/true modules_install
 install -Dm644 .config "%{buildroot}%{_kernel_dir}/config"
 install -Dm644 System.map "%{buildroot}%{_kernel_dir}/System.map"
 rm -rf %{buildroot}%{_kernel_dir}/build
@@ -152,3 +152,8 @@ fi
 %{_kernel_dir}/kernel
 
 %files
+
+%changelog
+* Tue Feb 24 2026 Custom Kernel Builder <builder@cachyos.org> - 6.18.12-1
+- Add changelog to resolve RPM warnings
+- Change DEPMOD to /bin/true to silence module installation warnings
