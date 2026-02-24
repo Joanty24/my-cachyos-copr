@@ -41,7 +41,6 @@ URL:            https://cachyos.org
 Requires:       kernel-core-uname-r = %{_kver}
 Requires:       kernel-modules-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
-Provides:       kernel-uname-r = %{_kver}
 
 BuildRequires:  bc bison dwarves elfutils-devel flex gcc gettext-devel kmod make openssl openssl-devel perl-Carp perl-devel perl-generators perl-interpreter python3-devel python3-pyyaml python-srpm-macros
 
@@ -57,7 +56,7 @@ Custom build of CachyOS kernel (Stable version).
 Summary:        The Linux kernel
 Provides:       kernel = %{_rpmver}
 Provides:       kernel-core-uname-r = %{_kver}
-Requires:       kernel-modules-uname-r = %{_kver}
+Provides:       kernel-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
 Requires(post): /usr/bin/kernel-install
 Requires(preun): /usr/bin/kernel-install
@@ -111,14 +110,14 @@ touch /var/lib/rpm-state/kernel/installing_core_%{_kver}
 
 %preun core
 entry_type=""
-/bin/kernel-install --help | grep -q -- '--entry-type=' && entry_type="--entry-type type1"
-/bin/kernel-install remove %{_kver} $entry_type || exit $?
+/usr/bin/kernel-install --help | grep -q -- '--entry-type=' && entry_type="--entry-type type1"
+/usr/bin/kernel-install $entry_type remove %{_kver} || exit $?
 
 %posttrans core
 rm -f /var/lib/rpm-state/kernel/installing_core_%{_kver}
 # Ensure this kernel package is treated as the default type
 sed -i 's/^DEFAULTKERNEL=.*/DEFAULTKERNEL=%{name}-core/' /etc/sysconfig/kernel || true
-/bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
+/usr/bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
 # Explicitly set this specific kernel as default for grubby just in case
 MACHINE_ID=$(cat /etc/machine-id 2>/dev/null)
 grubby --set-default /boot/${MACHINE_ID}/%{_kver}/linux 2>/dev/null || \
