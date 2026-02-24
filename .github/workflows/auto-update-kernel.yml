@@ -31,14 +31,14 @@ jobs:
           # Returns something like "6.18.12-cachyos1"
           COPR_VER=$(curl -s "https://copr.fedorainfracloud.org/api_3/build/list/?ownername=bieszczaders&projectname=kernel-cachyos" | jq -r '[.items[] | select((.chroots | index("fedora-43-x86_64")) and .source_package.name == "kernel-cachyos" and .source_package.version != null)] | sort_by(.source_package.version | split("-")[0] | split(".") | map(tonumber)) | reverse | .[0].source_package.version')
           
-          if [ -z "$COPR_VER" ]; then
+          if [ -z "$COPR_VER" ] || [ "$COPR_VER" = "null" ]; then
             echo "Error: Could not fetch a valid version from Copr API."
             exit 1
           fi
 
-          STABLE_FULL=$(echo $COPR_VER | cut -d- -f1)
-          BASE_STABLE=$(echo $STABLE_FULL | cut -d. -f1,2)
-          MINOR_STABLE=$(echo $STABLE_FULL | cut -d. -f3)
+          STABLE_FULL=$(echo "$COPR_VER" | cut -d- -f1)
+          BASE_STABLE=$(echo "$STABLE_FULL" | cut -d. -f1,2)
+          MINOR_STABLE=$(echo "$STABLE_FULL" | cut -d. -f3)
           if [ -z "$MINOR_STABLE" ]; then MINOR_STABLE=0; fi
           
           echo "CachyOS Stable (Copr F43): $STABLE_FULL (Base: $BASE_STABLE, Minor: $MINOR_STABLE)"

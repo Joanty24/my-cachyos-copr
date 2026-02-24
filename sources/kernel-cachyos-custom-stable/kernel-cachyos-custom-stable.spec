@@ -58,7 +58,6 @@ Provides:       kernel = %{_rpmver}
 Provides:       kernel-core-uname-r = %{_kver}
 Provides:       kernel-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
-Requires(post): /usr/bin/kernel-install
 Requires(preun): /usr/bin/kernel-install
 Requires(posttrans): /usr/bin/kernel-install grubby sed
 
@@ -110,7 +109,7 @@ touch /var/lib/rpm-state/kernel/installing_core_%{_kver}
 
 %preun core
 entry_type=""
-/usr/bin/kernel-install --help | grep -q -- '--entry-type=' && entry_type="--entry-type type1"
+/usr/bin/kernel-install --help | grep -q -- '--entry-type=' && entry_type="--entry-type=type1"
 /usr/bin/kernel-install $entry_type remove %{_kver} || exit $?
 
 %posttrans core
