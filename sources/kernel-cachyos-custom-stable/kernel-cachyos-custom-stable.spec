@@ -80,6 +80,7 @@ URL:            https://cachyos.org
 Requires:       kernel-core-uname-r = %{_kver}
 Requires:       kernel-modules-uname-r = %{_kver}
 Requires:       kernel-modules-core-uname-r = %{_kver}
+Provides:       kernel-cachyos = %{_rpmver}
 Provides:       installonlypkg(kernel)
 
 BuildRequires:  bc
