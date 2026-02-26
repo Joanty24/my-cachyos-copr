@@ -338,6 +338,7 @@ AutoReq:        no
 Conflicts:      xfsprogs < 4.3.0-1
 Conflicts:      xorg-x11-drv-vmmouse < 13.0.99
 Provides:       kernel = %{_rpmver}
+Provides:       kernel-cachyos-core = %{_rpmver}
 Provides:       kernel-core-uname-r = %{_kver}
 Provides:       kernel-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
@@ -399,6 +400,7 @@ Recommends:     linux-firmware
 %package modules
 Summary:        Kernel modules package for %{name}
 Provides:       kernel-modules = %{_rpmver}
+Provides:       kernel-cachyos-modules = %{_rpmver}
 Provides:       kernel-modules-core = %{_rpmver}
 Provides:       kernel-modules-extra = %{_rpmver}
 Provides:       kernel-modules-uname-r = %{_kver}
@@ -444,6 +446,7 @@ Requires(posttrans): dracut
 %package devel
 Summary:        Development package for building kernel modules to match %{name}
 Provides:       kernel-devel = %{_rpmver}
+Provides:       kernel-cachyos-devel = %{_rpmver}
 Provides:       kernel-devel-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
 AutoReqProv:    no
@@ -485,6 +488,7 @@ Requires:       gcc
 %package devel-matched
 Summary:        Meta package to install matching core and devel packages for %{name}
 Provides:       kernel-devel-matched = %{_rpmver}
+Provides:       kernel-cachyos-devel-matched = %{_rpmver}
 Requires:       %{name}-core = %{_rpmver}
 Requires:       %{name}-devel = %{_rpmver}
 
