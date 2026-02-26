@@ -407,8 +407,8 @@ Provides:       kernel-modules-extra-uname-r = %{_kver}
 Provides:       v4l2loopback-kmod = 0.14.0
 Provides:       installonlypkg(kernel-module)
 Requires:       kernel-uname-r = %{_kver}
-Requires(post): /sbin/depmod
-Requires(postun): /sbin/depmod
+Requires(post): kmod
+Requires(postun): kmod
 Requires(posttrans): dracut
 
 %description modules
