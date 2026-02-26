@@ -9,36 +9,66 @@ This repository contains the RPM packaging for a custom CachyOS kernel for Fedor
 - **Automated Updates**: A GitHub Action automatically checks the upstream CachyOS Copr repository daily, bumps the `.spec` file version to match the latest F43 release, and triggers a new Copr build.
 - **Seamless Fedora Integration**: Fully integrates with Fedora's `kernel-install`, `dracut`, and `grubby`. Supports retaining older kernel modules via `installonlypkg`.
 
+## Checking for CPU support
+
+Check support by the following command:
+
+```bash
+/lib64/ld-linux-x86-64.so.2 --help | grep "(supported, searched)"
+```
+
+If it does not detect x86\_64\_v3 support, **do not install this kernel**. Otherwise, you will end up with a non-functioning operating system!
+
 ## Installation
 
-You can install this custom kernel directly from my Copr repository.
+### Fedora Workstation
 
-### 1. Enable the Copr repository
+#### 1. Enable the Copr repository
 ```bash
 sudo dnf copr enable joanty24/cachyos-custom
 ```
 
-### 2. Install the kernel
+#### 2. Install the kernel
 ```bash
-sudo dnf install kernel-cachyos-custom-stable
+sudo dnf install kernel-cachyos-custom-stable kernel-cachyos-custom-stable-devel-matched
 ```
 
-### 3. Reboot
-Reboot your system to start using the new kernel. It will automatically be set as the default boot entry.
+#### 3. Reboot
 ```bash
 reboot
 ```
 
-### 4. Verify the changes
-After rebooting, you can confirm that the kernel is active and running at 250Hz:
+### Fedora Silverblue / Atomic
+
+#### 1. Add the repository
+```bash
+cd /etc/yum.repos.d/
+sudo wget https://copr.fedorainfracloud.org/coprs/joanty24/cachyos-custom/repo/fedora-$(rpm -E %fedora)/joanty24-cachyos-custom-fedora-$(rpm -E %fedora).repo
+```
+
+#### 2. Override the stock kernel
+```bash
+sudo rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install kernel-cachyos-custom-stable
+sudo systemctl reboot
+```
+
+## SELinux
+
+If you are using SELinux, enable the following policy to load kernel modules:
+
+```bash
+sudo setsebool -P domain_kernel_load_modules on
+```
+
+## Verify the installation
+
+After rebooting, confirm the kernel is active and running at 250Hz:
 
 ```bash
 # Check the kernel version
 uname -r
 
 # Verify the tickrate (HZ)
-zcat /proc/config.gz | grep CONFIG_HZ
-# or check the installed config file:
 grep CONFIG_HZ /lib/modules/$(uname -r)/config
 ```
 
