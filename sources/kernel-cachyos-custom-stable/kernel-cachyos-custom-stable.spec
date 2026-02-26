@@ -100,6 +100,7 @@ BuildRequires:  perl-interpreter
 BuildRequires:  python3-devel
 BuildRequires:  python3-pyyaml
 BuildRequires:  python-srpm-macros
+BuildRequires:  zstd
 
 %if %{_build_lto}
 BuildRequires:  clang
@@ -269,6 +270,7 @@ cd ..
     cp -a --parents arch/x86/include %{buildroot}%{_devel_dir}
     cp -a --parents tools/arch/x86/include %{buildroot}%{_devel_dir}
     cp -a include %{buildroot}%{_devel_dir}/include
+    install -d %{buildroot}%{_devel_dir}/sound/soc/sof
     cp -a sound/soc/sof/sof-audio.h %{buildroot}%{_devel_dir}/sound/soc/sof
     cp -a tools/objtool/objtool %{buildroot}%{_devel_dir}/tools/objtool/
     cp -a tools/objtool/fixdep %{buildroot}%{_devel_dir}/tools/objtool/
@@ -339,6 +341,7 @@ Provides:       kernel = %{_rpmver}
 Provides:       kernel-core-uname-r = %{_kver}
 Provides:       kernel-uname-r = %{_kver}
 Provides:       installonlypkg(kernel)
+Requires:       kernel-modules-uname-r = %{_kver}
 Requires(pre):  coreutils
 Requires(pre):  dracut >= 027
 Requires(pre):  systemd >= 203-2
@@ -362,7 +365,7 @@ Recommends:     linux-firmware
     rm -f %{_localstatedir}/lib/rpm-state/%{name}/installing_core_%{_kver}
     sed -i 's/^DEFAULTKERNEL=.*/DEFAULTKERNEL=%{name}-core/' /etc/sysconfig/kernel || true
     if [ ! -e /run/ostree-booted ]; then
-        /bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
+        /usr/bin/kernel-install add %{_kver} %{_kernel_dir}/vmlinuz || exit $?
         if [[ ! -e "/boot/symvers-%{_kver}.zst" ]]; then
             cp "%{_kernel_dir}/symvers.zst" "/boot/symvers-%{_kver}.zst"
             if command -v restorecon &>/dev/null; then
@@ -422,6 +425,7 @@ Requires(posttrans): dracut
     /sbin/depmod -a %{_kver} || exit $?
 
 %posttrans modules
+    /sbin/depmod -a %{_kver}
     if [ ! -e /run/ostree-booted ]; then
         if [ -f %{_localstatedir}/lib/rpm-state/%{name}/need_to_run_dracut_%{_kver} ]; then
             rm -f %{_localstatedir}/lib/rpm-state/%{name}/need_to_run_dracut_%{_kver}
